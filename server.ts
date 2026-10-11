@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
@@ -66,8 +67,10 @@ app.post('/api/url-lookup', async (req, res) => {
 
 // Serve frontend in production or mount vite in development
 async function startServer() {
-  if (process.env.NODE_ENV === 'production') {
-    const distPath = path.resolve(__dirname, 'dist');
+  const distPath = path.resolve(__dirname, 'dist');
+  const hasDist = fs.existsSync(path.resolve(distPath, 'index.html'));
+
+  if (hasDist || process.env.NODE_ENV === 'production') {
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       res.sendFile(path.resolve(distPath, 'index.html'));
@@ -81,8 +84,12 @@ async function startServer() {
       app.use(vite.middlewares);
     } catch {
       // Fallback if Vite middleware is unavailable
-      const distPath = path.resolve(__dirname, 'dist');
-      app.use(express.static(distPath));
+      if (hasDist) {
+        app.use(express.static(distPath));
+        app.get('*', (req, res) => {
+          res.sendFile(path.resolve(distPath, 'index.html'));
+        });
+      }
     }
   }
 

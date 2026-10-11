@@ -65,11 +65,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     setSelectedLang(currentLang);
   };
 
+  const [confirmClearStorage, setConfirmClearStorage] = useState(false);
+  const [clearedNotice, setClearedNotice] = useState(false);
+
   const handleClearHistory = () => {
-    if (window.confirm('Clear all verification logs and cached checks from this browser?')) {
-      clearHistory();
-      alert('Local storage history has been wiped.');
-    }
+    clearHistory();
+    setConfirmClearStorage(false);
+    setClearedNotice(true);
+    setTimeout(() => setClearedNotice(false), 2500);
   };
 
   return (
@@ -322,13 +325,41 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
         {/* 5. Master Actions: Apply / Cancel / Clear Storage */}
         <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-wrap items-center justify-between gap-3">
-          <button
-            onClick={handleClearHistory}
-            className="flex items-center gap-1.5 text-xs text-rose-600 hover:text-rose-700 font-semibold"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>Clear Local Storage History</span>
-          </button>
+          <div className="flex items-center gap-2">
+            {clearedNotice ? (
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                <Check className="w-3.5 h-3.5" />
+                <span>Local storage wiped!</span>
+              </span>
+            ) : confirmClearStorage ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-rose-600 font-semibold">Wipe all local records?</span>
+                <button
+                  type="button"
+                  onClick={handleClearHistory}
+                  className="px-2.5 py-1 text-xs font-bold rounded bg-rose-600 text-white hover:bg-rose-700"
+                >
+                  Yes, Wipe
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmClearStorage(false)}
+                  className="px-2.5 py-1 text-xs font-semibold rounded border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmClearStorage(true)}
+                className="flex items-center gap-1.5 text-xs text-rose-600 hover:text-rose-700 font-semibold"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Clear Local Storage History</span>
+              </button>
+            )}
+          </div>
 
           <div className="flex items-center gap-2">
             {isPreviewing && (

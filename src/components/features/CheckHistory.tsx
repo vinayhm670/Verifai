@@ -18,12 +18,13 @@ export const CheckHistory: React.FC = () => {
     }
   };
 
+  const [showConfirmClear, setShowConfirmClear] = useState(false);
+
   const handleClearAll = () => {
-    if (window.confirm('Are you sure you want to clear your local verification history?')) {
-      clearHistory();
-      setHistory([]);
-      setSelectedResult(null);
-    }
+    clearHistory();
+    setHistory([]);
+    setSelectedResult(null);
+    setShowConfirmClear(false);
   };
 
   return (
@@ -43,13 +44,33 @@ export const CheckHistory: React.FC = () => {
         </div>
 
         {history.length > 0 && (
-          <button
-            onClick={handleClearAll}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>Clear All History</span>
-          </button>
+          <div className="flex items-center gap-2">
+            {showConfirmClear ? (
+              <>
+                <span className="text-xs text-rose-600 dark:text-rose-400 font-semibold">Confirm clear?</span>
+                <button
+                  onClick={handleClearAll}
+                  className="px-3 py-1.5 text-xs font-bold rounded-lg bg-rose-600 text-white hover:bg-rose-700 transition-colors"
+                >
+                  Yes, Clear
+                </button>
+                <button
+                  onClick={() => setShowConfirmClear(false)}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => setShowConfirmClear(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Clear All History</span>
+              </button>
+            )}
+          </div>
         )}
       </div>
 

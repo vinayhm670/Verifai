@@ -15,13 +15,15 @@ export const PhotoScanChecker: React.FC<PhotoScanCheckerProps> = ({ onOpenAssist
   const [extractedText, setExtractedText] = useState('');
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadError(null);
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
     if (images.length + files.length > 3) {
-      alert('You can upload a maximum of 3 images per verification.');
+      setUploadError('You can upload a maximum of 3 images per verification.');
       return;
     }
 
@@ -137,6 +139,11 @@ export const PhotoScanChecker: React.FC<PhotoScanCheckerProps> = ({ onOpenAssist
               onChange={handleFiles}
               className="text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-teal-800 file:text-white hover:file:bg-teal-900"
             />
+            {uploadError && (
+              <div className="mt-2 text-xs text-rose-600 dark:text-rose-400 font-semibold">
+                {uploadError}
+              </div>
+            )}
             <div className="mt-1 text-[11px] text-slate-400">
               {images.length}/3 images uploaded
             </div>

@@ -18,16 +18,18 @@ export const CertificateScanner: React.FC<CertificateScannerProps> = ({ onOpenAs
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [selectedAnnotation, setSelectedAnnotation] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   // Simulated visual anomalies for certificates
   const [annotations, setAnnotations] = useState<{ id: string; label: string; desc: string; top: string; left: string }[]>([]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileError(null);
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('File exceeds 5MB limit. Please upload a smaller JPG/PNG.');
+      setFileError('File exceeds 5MB limit. Please upload a smaller JPG/PNG.');
       return;
     }
 
@@ -153,6 +155,11 @@ export const CertificateScanner: React.FC<CertificateScannerProps> = ({ onOpenAs
                 onChange={handleFileUpload}
                 className="text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-teal-800 file:text-white hover:file:bg-teal-900"
               />
+              {fileError && (
+                <div className="mt-3 text-xs text-rose-600 dark:text-rose-400 font-semibold flex items-center justify-center gap-1">
+                  <span>{fileError}</span>
+                </div>
+              )}
               {fileName && (
                 <div className="mt-3 text-xs text-emerald-700 dark:text-emerald-400 font-semibold flex items-center justify-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" />
