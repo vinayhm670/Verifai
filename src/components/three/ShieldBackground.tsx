@@ -3,18 +3,22 @@ import * as THREE from 'three';
 
 interface ShieldBackgroundProps {
   isAnalyzing?: boolean;
+  subtleMode?: boolean;
 }
 
 interface NerveBranch {
   points: THREE.Vector3[];
   length: number;
   curve: THREE.CatmullRomCurve3;
+  depthLayer: number;
 }
 
 interface NeuralNode {
   position: THREE.Vector3;
+  originalPosition: THREE.Vector3;
   baseScale: number;
   energy: number;
+  glowIntensity: number;
   meshIndex: number;
 }
 
@@ -23,9 +27,21 @@ interface SignalParticle {
   progress: number;
   speed: number;
   color: THREE.Color;
+  size: number;
 }
 
-export const ShieldBackground: React.FC<ShieldBackgroundProps> = ({ isAnalyzing = false }) => {
+interface ElectricalPulse {
+  branchIndex: number;
+  headProgress: number;
+  length: number;
+  speed: number;
+  intensity: number;
+}
+
+export const ShieldBackground: React.FC<ShieldBackgroundProps> = ({ 
+  isAnalyzing = false,
+  subtleMode = false 
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [webglSupported, setWebglSupported] = useState(true);
@@ -56,73 +72,81 @@ export const ShieldBackground: React.FC<ShieldBackgroundProps> = ({ isAnalyzing 
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 
-    // Neural Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+    // Neural Bioluminescent Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
-    // Dynamic green & teal lights
-    const neuralGreenLight = new THREE.PointLight(0x22c55e, 3.5, 45);
+    // Natural luminous green (#39FF88, #22C55E, #00FF9D)
+    const neuralGreenLight = new THREE.PointLight(0x39ff88, 3.8, 48);
     neuralGreenLight.position.set(-6, 6, 12);
     scene.add(neuralGreenLight);
 
-    const mintLight = new THREE.PointLight(0x86efac, 2.5, 40);
-    mintLight.position.set(7, -5, 10);
-    scene.add(mintLight);
+    const biolumLight = new THREE.PointLight(0x00ff9d, 2.8, 42);
+    biolumLight.position.set(7, -5, 10);
+    scene.add(biolumLight);
 
-    const cyanLight = new THREE.PointLight(0x67e8f9, 2.0, 35);
-    cyanLight.position.set(0, 10, 8);
-    scene.add(cyanLight);
+    const tealLight = new THREE.PointLight(0x0f766e, 2.4, 38);
+    tealLight.position.set(0, 10, 8);
+    scene.add(tealLight);
 
     const mainNetworkGroup = new THREE.Group();
     scene.add(mainNetworkGroup);
 
     // ==========================================
-    // 1. PROCEDURAL GREEN NERVE-SYSTEM BRANCHES
+    // 1. ORGANIC BRANCHING GREEN NERVE FIBRES
     // ==========================================
     const isMobile = window.innerWidth < 768;
     const branches: NerveBranch[] = [];
     const neuralNodes: NeuralNode[] = [];
 
-    // Nerve origins across depth layers
+    // Nerve roots across multiple depth layers
     const stemOrigins = [
-      new THREE.Vector3(-14, -8, -4),
-      new THREE.Vector3(14, 8, -5),
-      new THREE.Vector3(-12, 10, -3),
-      new THREE.Vector3(13, -9, -4),
-      new THREE.Vector3(0, -12, -2),
-      new THREE.Vector3(-10, 0, -6),
-      new THREE.Vector3(11, 2, -5)
+      { pos: new THREE.Vector3(-15, -9, -5), layer: 0 },
+      { pos: new THREE.Vector3(15, 9, -6), layer: 0 },
+      { pos: new THREE.Vector3(-13, 11, -3), layer: 1 },
+      { pos: new THREE.Vector3(14, -10, -4), layer: 1 },
+      { pos: new THREE.Vector3(0, -13, -2), layer: 2 },
+      { pos: new THREE.Vector3(-11, 1, -7), layer: 0 },
+      { pos: new THREE.Vector3(12, 3, -5), layer: 1 },
+      { pos: new THREE.Vector3(-4, 13, -3), layer: 2 },
+      { pos: new THREE.Vector3(5, -12, -4), layer: 1 }
     ];
 
     const generateNervePath = (
       start: THREE.Vector3, 
       direction: THREE.Vector3, 
       depth: number, 
-      maxDepth: number
+      maxDepth: number,
+      layer: number
     ) => {
-      const pointCount = 6;
+      const pointCount = 7;
       const points: THREE.Vector3[] = [start.clone()];
       let current = start.clone();
       let currentDir = direction.clone().normalize();
 
       for (let p = 1; p < pointCount; p++) {
-        // Organic biological jitter
-        const angleVar = (Math.random() - 0.5) * 0.45;
-        currentDir.x += angleVar;
-        currentDir.y += (Math.random() - 0.5) * 0.45;
-        currentDir.z += (Math.random() - 0.5) * 0.25;
+        // Natural biological jitter simulating dendritic branching
+        const angleVarX = (Math.random() - 0.5) * 0.48;
+        const angleVarY = (Math.random() - 0.5) * 0.48;
+        const angleVarZ = (Math.random() - 0.5) * 0.28;
+        
+        currentDir.x += angleVarX;
+        currentDir.y += angleVarY;
+        currentDir.z += angleVarZ;
         currentDir.normalize();
 
-        const stepLength = 2.2 + Math.random() * 1.5;
+        const stepLength = 2.0 + Math.random() * 1.6;
         current = current.clone().add(currentDir.clone().multiplyScalar(stepLength));
         points.push(current.clone());
 
-        // Create neural node at branch junctions
-        if (Math.random() > 0.45 || p === pointCount - 1) {
+        // Place neural nodes at junctions and endpoints
+        if (Math.random() > 0.4 || p === pointCount - 1) {
           neuralNodes.push({
             position: current.clone(),
-            baseScale: 0.12 + Math.random() * 0.12,
-            energy: Math.random() * 0.6,
+            originalPosition: current.clone(),
+            baseScale: 0.14 + Math.random() * 0.14,
+            energy: Math.random() * 0.8,
+            glowIntensity: 0.6 + Math.random() * 0.4,
             meshIndex: 0
           });
         }
@@ -132,41 +156,50 @@ export const ShieldBackground: React.FC<ShieldBackgroundProps> = ({ isAnalyzing 
       branches.push({
         points,
         length: curve.getLength(),
-        curve
+        curve,
+        depthLayer: layer
       });
 
-      // Recursive sub-branching
+      // Recursive bifurcations
       if (depth < maxDepth && (!isMobile || depth < 1)) {
-        const splitPoint = points[Math.floor(points.length * 0.6)];
-        const branchDir1 = currentDir.clone().applyAxisAngle(new THREE.Vector3(0, 0, 1), 0.55);
-        const branchDir2 = currentDir.clone().applyAxisAngle(new THREE.Vector3(0, 0, 1), -0.55);
-        generateNervePath(splitPoint, branchDir1, depth + 1, maxDepth);
-        if (Math.random() > 0.4) {
-          generateNervePath(splitPoint, branchDir2, depth + 1, maxDepth);
+        const splitPoint = points[Math.floor(points.length * 0.55)];
+        const branchDir1 = currentDir.clone().applyAxisAngle(new THREE.Vector3(0, 0, 1), 0.52);
+        const branchDir2 = currentDir.clone().applyAxisAngle(new THREE.Vector3(0, 0, 1), -0.52);
+        
+        generateNervePath(splitPoint, branchDir1, depth + 1, maxDepth, layer);
+        if (Math.random() > 0.35) {
+          generateNervePath(splitPoint, branchDir2, depth + 1, maxDepth, layer);
         }
       }
     };
 
-    // Build branching tree
-    stemOrigins.forEach((origin) => {
-      const targetCenter = new THREE.Vector3((Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, 0);
-      const dir = targetCenter.sub(origin).normalize();
-      generateNervePath(origin, dir, 0, isMobile ? 1 : 2);
+    // Generate branching nerve trees
+    stemOrigins.forEach((stem) => {
+      const targetCenter = new THREE.Vector3((Math.random() - 0.5) * 5, (Math.random() - 0.5) * 5, 0);
+      const dir = targetCenter.sub(stem.pos).normalize();
+      generateNervePath(stem.pos, dir, 0, isMobile ? 1 : 2, stem.layer);
     });
 
-    // Render Filaments using smooth Curves
+    // 1B. Render Nerve Filaments with Multi-Depth Color Grading
     const nerveLineGroup = new THREE.Group();
     mainNetworkGroup.add(nerveLineGroup);
 
     branches.forEach((b) => {
-      const divisions = 30;
+      const divisions = 32;
       const curvePoints = b.curve.getPoints(divisions);
       const lineGeo = new THREE.BufferGeometry().setFromPoints(curvePoints);
       
+      // Depth-based opacity & color: closer layers are luminous green #39FF88, deeper layers are deep teal/emerald #115E59
+      const filamentColor = b.depthLayer === 2 
+        ? 0x39ff88 // Foreground luminous green
+        : b.depthLayer === 1 
+          ? 0x22c55e // Mid-layer neural green
+          : 0x0f766e; // Deep teal layer
+
       const lineMat = new THREE.LineBasicMaterial({
-        color: 0x22c55e,
+        color: filamentColor,
         transparent: true,
-        opacity: isMobile ? 0.28 : 0.38,
+        opacity: isMobile ? 0.28 : (subtleMode ? 0.24 : 0.42),
         linewidth: 1
       });
 
@@ -175,13 +208,13 @@ export const ShieldBackground: React.FC<ShieldBackgroundProps> = ({ isAnalyzing 
     });
 
     // ==========================================
-    // 2. GLOWING NEURAL JUNCTION NODES
+    // 2. BIOLUMINESCENT NEURAL JUNCTION NODES
     // ==========================================
-    const nodeGeometry = new THREE.SphereGeometry(1, 12, 12);
+    const nodeGeometry = new THREE.SphereGeometry(1, 14, 14);
     const nodeMaterial = new THREE.MeshBasicMaterial({
       color: 0x86efac,
       transparent: true,
-      opacity: 0.85
+      opacity: subtleMode ? 0.65 : 0.9
     });
 
     const instancedNodes = new THREE.InstancedMesh(nodeGeometry, nodeMaterial, neuralNodes.length);
@@ -200,21 +233,22 @@ export const ShieldBackground: React.FC<ShieldBackgroundProps> = ({ isAnalyzing 
     // ==========================================
     // 3. ACTION-POTENTIAL SIGNAL PARTICLES
     // ==========================================
-    const particleCount = isMobile ? 35 : 75;
+    const particleCount = isMobile ? 40 : (subtleMode ? 50 : 90);
     const signalParticles: SignalParticle[] = [];
     const particleColors = [
-      new THREE.Color(0x22c55e), // Neural Green
-      new THREE.Color(0x86efac), // Soft Green Highlight
-      new THREE.Color(0xa7f3d0), // Mint
-      new THREE.Color(0x67e8f9)  // Cyan
+      new THREE.Color(0x39ff88), // Luminous Green
+      new THREE.Color(0x00ff9d), // Mint Emerald
+      new THREE.Color(0x86efac), // Soft Highlight
+      new THREE.Color(0x67e8f9)  // Action Cyan
     ];
 
     for (let i = 0; i < particleCount; i++) {
       signalParticles.push({
         branchIndex: Math.floor(Math.random() * branches.length),
         progress: Math.random(),
-        speed: 0.003 + Math.random() * 0.005,
-        color: particleColors[Math.floor(Math.random() * particleColors.length)]
+        speed: 0.0025 + Math.random() * 0.0055,
+        color: particleColors[Math.floor(Math.random() * particleColors.length)],
+        size: isMobile ? 0.32 : 0.46
       });
     }
 
@@ -237,7 +271,7 @@ export const ShieldBackground: React.FC<ShieldBackgroundProps> = ({ isAnalyzing 
     particleGeo.setAttribute('color', new THREE.BufferAttribute(particleColorArray, 3));
 
     const particleMat = new THREE.PointsMaterial({
-      size: isMobile ? 0.35 : 0.45,
+      size: isMobile ? 0.36 : 0.48,
       vertexColors: true,
       transparent: true,
       opacity: 0.95
@@ -247,7 +281,16 @@ export const ShieldBackground: React.FC<ShieldBackgroundProps> = ({ isAnalyzing 
     mainNetworkGroup.add(signalPointSystem);
 
     // ==========================================
-    // 4. FLOATING TRANSLUCENT SHIELD (FOREGROUND)
+    // 3B. ELECTRICAL PULSE PROPAGATION WAVES
+    // ==========================================
+    const electricalPulses: ElectricalPulse[] = [
+      { branchIndex: 0, headProgress: 0.1, length: 0.25, speed: 0.008, intensity: 1.0 },
+      { branchIndex: Math.floor(branches.length * 0.3), headProgress: 0.4, length: 0.3, speed: 0.007, intensity: 0.9 },
+      { branchIndex: Math.floor(branches.length * 0.7), headProgress: 0.7, length: 0.22, speed: 0.009, intensity: 1.2 }
+    ];
+
+    // ==========================================
+    // 4. FLOATING TRANSLUCENT SHIELD (FOREGROUND EMBLEM)
     // ==========================================
     const shieldShape = new THREE.Shape();
     shieldShape.moveTo(0, 3.6);
@@ -271,8 +314,8 @@ export const ShieldBackground: React.FC<ShieldBackgroundProps> = ({ isAnalyzing 
       emissive: 0x071e16,
       metalness: 0.15,
       roughness: 0.2,
-      transmission: 0.72,
-      thickness: 1.2,
+      transmission: 0.74,
+      thickness: 1.25,
       transparent: true,
       opacity: 0.88,
       reflectivity: 0.85
@@ -282,7 +325,7 @@ export const ShieldBackground: React.FC<ShieldBackgroundProps> = ({ isAnalyzing 
     shieldMesh.position.set(0, 0.4, 1.2);
     mainNetworkGroup.add(shieldMesh);
 
-    // Center Checkmark
+    // Center Verification Checkmark
     const checkShape = new THREE.Shape();
     checkShape.moveTo(-1.0, 0.1);
     checkShape.lineTo(-0.35, -0.55);
@@ -304,9 +347,16 @@ export const ShieldBackground: React.FC<ShieldBackgroundProps> = ({ isAnalyzing 
     mainNetworkGroup.add(checkMesh);
 
     // ==========================================
-    // 5. INTERACTIVE EVENT HANDLERS (MOUSE, TOUCH, SCROLL)
+    // 5. INTERACTIVE EVENT HANDLERS (POINTER & SCROLL)
     // ==========================================
-    const pointer = { x: 0, y: 0, targetX: 0, targetY: 0 };
+    const pointer = { 
+      x: 0, 
+      y: 0, 
+      targetX: 0, 
+      targetY: 0,
+      worldX: 0,
+      worldY: 0
+    };
 
     const handlePointerMove = (e: MouseEvent | TouchEvent) => {
       let clientX = 0;
@@ -320,6 +370,10 @@ export const ShieldBackground: React.FC<ShieldBackgroundProps> = ({ isAnalyzing 
       }
       pointer.targetX = (clientX / window.innerWidth) * 2 - 1;
       pointer.targetY = -(clientY / window.innerHeight) * 2 + 1;
+      
+      // Projected world position estimation
+      pointer.worldX = pointer.targetX * 14;
+      pointer.worldY = pointer.targetY * 9;
     };
 
     window.addEventListener('mousemove', handlePointerMove, { passive: true });
@@ -345,7 +399,7 @@ export const ShieldBackground: React.FC<ShieldBackgroundProps> = ({ isAnalyzing 
     document.addEventListener('visibilitychange', handleVisibility);
 
     // ==========================================
-    // 6. ANIMATION & PULSE LOOP
+    // 6. ANIMATION & BIOLOGICAL NERVE PULSE LOOP
     // ==========================================
     let animationFrameId: number;
     let clock = new THREE.Clock();
@@ -362,30 +416,31 @@ export const ShieldBackground: React.FC<ShieldBackgroundProps> = ({ isAnalyzing 
       pointer.y += (pointer.targetY - pointer.y) * 0.05;
 
       if (!prefersReducedMotion) {
-        // Gentle organic float
-        mainNetworkGroup.rotation.y = pointer.x * 0.35 + Math.sin(elapsed * 0.4) * 0.04;
-        mainNetworkGroup.rotation.x = -pointer.y * 0.25 + Math.cos(elapsed * 0.35) * 0.03;
-        mainNetworkGroup.position.y = Math.sin(elapsed * 0.8) * 0.2 - (scrollY * 0.0025);
+        // Continuous biological movement (gentle respiratory sway)
+        const organicSway = Math.sin(elapsed * 0.45) * 0.04;
+        mainNetworkGroup.rotation.y = pointer.x * 0.32 + organicSway;
+        mainNetworkGroup.rotation.x = -pointer.y * 0.22 + Math.cos(elapsed * 0.38) * 0.03;
+        mainNetworkGroup.position.y = Math.sin(elapsed * 0.75) * 0.22 - (scrollY * 0.0022);
         mainNetworkGroup.position.z = Math.cos(elapsed * 0.5) * 0.2;
 
-        // Verification response: wave excitation when analyzing
+        // Dynamic reaction when a verification check runs
         if (isAnalyzing) {
-          shieldMaterial.emissive.setHex(0x22c55e);
-          neuralGreenLight.intensity = 5.5;
-          mintLight.intensity = 4.5;
-          cyanLight.intensity = 4.0;
+          shieldMaterial.emissive.setHex(0x39ff88);
+          neuralGreenLight.intensity = 5.8;
+          biolumLight.intensity = 4.8;
+          tealLight.intensity = 4.2;
         } else {
           shieldMaterial.emissive.setHex(0x071e16);
-          neuralGreenLight.intensity = 3.2;
-          mintLight.intensity = 2.2;
-          cyanLight.intensity = 1.8;
+          neuralGreenLight.intensity = 3.6;
+          biolumLight.intensity = 2.6;
+          tealLight.intensity = 2.0;
         }
 
         // Animate signal particles along nerve branches
         const positions = particleGeo.attributes.position.array as Float32Array;
 
         signalParticles.forEach((sp, idx) => {
-          const currentSpeed = isAnalyzing ? sp.speed * 2.8 : sp.speed;
+          const currentSpeed = isAnalyzing ? sp.speed * 2.6 : sp.speed;
           sp.progress += currentSpeed;
 
           if (sp.progress >= 1.0) {
@@ -403,11 +458,32 @@ export const ShieldBackground: React.FC<ShieldBackgroundProps> = ({ isAnalyzing 
 
         particleGeo.attributes.position.needsUpdate = true;
 
-        // Neural node soft energy pulse
+        // Advance electrical action-potential pulses
+        electricalPulses.forEach((pulse) => {
+          pulse.headProgress += pulse.speed;
+          if (pulse.headProgress >= 1.0) {
+            pulse.headProgress = 0;
+            pulse.branchIndex = Math.floor(Math.random() * branches.length);
+          }
+        });
+
+        // Neural node soft energy pulse + pointer proximity reaction
         neuralNodes.forEach((node, i) => {
-          node.energy += 0.02;
-          const pulse = Math.sin(node.energy + elapsed * 1.5) * 0.3 + 0.7;
-          const dynamicScale = node.baseScale * (1 + pulse * 0.35);
+          node.energy += 0.022;
+
+          // Pointer proximity repulsion & brightening
+          const dx = node.originalPosition.x - pointer.worldX;
+          const dy = node.originalPosition.y - pointer.worldY;
+          const distSq = dx * dx + dy * dy;
+          const proximityInfluence = distSq < 16 ? (1 - Math.sqrt(distSq) / 4) : 0;
+
+          // Gentle biological twitch when pointer is near
+          node.position.x = node.originalPosition.x + dx * proximityInfluence * 0.12;
+          node.position.y = node.originalPosition.y + dy * proximityInfluence * 0.12;
+
+          // Rhythmic firing pulse
+          const pulse = Math.sin(node.energy + elapsed * 1.6) * 0.32 + 0.68;
+          const dynamicScale = node.baseScale * (1 + pulse * 0.35 + proximityInfluence * 0.45);
 
           dummy.position.copy(node.position);
           dummy.scale.setScalar(dynamicScale);
@@ -439,7 +515,7 @@ export const ShieldBackground: React.FC<ShieldBackgroundProps> = ({ isAnalyzing 
       particleGeo.dispose();
       particleMat.dispose();
     };
-  }, [isAnalyzing]);
+  }, [isAnalyzing, subtleMode]);
 
   return (
     <div
@@ -450,12 +526,12 @@ export const ShieldBackground: React.FC<ShieldBackgroundProps> = ({ isAnalyzing 
       {webglSupported ? (
         <canvas 
           ref={canvasRef} 
-          className="w-full h-full block opacity-85 dark:opacity-65 transition-opacity duration-300" 
+          className="w-full h-full block opacity-90 dark:opacity-75 transition-opacity duration-300" 
         />
       ) : (
         /* CSS / SVG Static Fallback for non-WebGL environments */
         <div className="absolute inset-0 bg-gradient-to-b from-teal-50/70 via-slate-50 to-slate-100 dark:from-[#07130F] dark:via-[#091713] dark:to-[#07130F]">
-          <div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:28px_28px] opacity-25" />
+          <div className="absolute inset-0 bg-[radial-gradient(#39ff88_1px,transparent_1px)] [background-size:28px_28px] opacity-25" />
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl animate-pulse" />
         </div>
       )}

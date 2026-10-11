@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import { GoogleGenAI } from '@google/genai';
 
 dotenv.config();
 
@@ -14,6 +15,11 @@ const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json({ limit: '10mb' }));
 
+// Initialize GoogleGenAI if key is present
+const aiClient = process.env.GEMINI_API_KEY
+  ? new GoogleGenAI({})
+  : null;
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
@@ -23,6 +29,56 @@ app.get('/api/health', (req, res) => {
     authMode: 'decoupled_compatible',
     platform: 'Verifai Scam Detection Engine'
   });
+});
+
+// AI analysis and consultation proxy endpoint
+app.post('/api/ai-analyze', async (req, res) => {
+  const { prompt, context, systemRole } = req.body;
+
+  if (!prompt || typeof prompt !== 'string') {
+    return res.status(400).json({ error: 'Prompt is required' });
+  }
+
+  if (!aiClient) {
+    return res.json({
+      fallback: true,
+      text: "AI service key is not configured on this host. Using Verifai's built-in heuristic fraud detection engine."
+    });
+  }
+
+  try {
+    const defaultSystem = `You are Verifai Trust Copilot, an expert cybersecurity and anti-fraud investigator specializing in Indian scams.
+Your domain covers:
+- Job & Internship scams (advance laptop fee, no-interview appointment letters, ₹2,499 certificate charges)
+- Payment fraud (Reverse UPI PIN debit, fake QR codes, APK downloads, power bill/challan SMS)
+- Educational fraud (unaccredited degrees, fake DigiLocker/NAD marks, 100% guarantee coaching violating CCPA norms)
+- Overseas migration traps (unregistered recruiting agents lacking MEA eMigrate license, tourist-to-work visa scams)
+- Academic paper leaks and backdoor seats (Telegram groups, fake domains)
+
+Provide clear, objective analysis. Give direct action steps (calling 1930, reporting on cybercrime.gov.in, verifying on mca.gov.in or emigrate.gov.in). If asked for Hindi, respond in fluent, easy-to-understand Hindi. If asked for a complaint draft or reply, provide ready-to-copy text formatted cleanly.`;
+
+    const fullPrompt = `${context ? `Context from scanned offer:\n"""\n${context}\n"""\n\n` : ''}User Question/Instruction:\n${prompt}`;
+
+    const response = await aiClient.models.generateContent({
+      model: 'gemini-3.8-flash',
+      contents: fullPrompt,
+      config: {
+        systemInstruction: systemRole || defaultSystem,
+      }
+    });
+
+    res.json({
+      success: true,
+      text: response.text || "No response generated"
+    });
+  } catch (error: any) {
+    console.error('Gemini API call failed:', error);
+    res.status(500).json({
+      error: 'AI analysis failed',
+      fallback: true,
+      message: error?.message || 'Unknown error'
+    });
+  }
 });
 
 // SSRF-safe URL inspector endpoint

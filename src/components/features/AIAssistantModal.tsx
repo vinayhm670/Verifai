@@ -40,7 +40,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
     { label: "Explain Simpler", prompt: "Explain this in very simple plain words for a first-time college graduate." }
   ];
 
-  const handleSend = (textToSend?: string) => {
+  const handleSend = async (textToSend?: string) => {
     const text = textToSend || inputText;
     if (!text.trim()) return;
 
@@ -54,32 +54,60 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
     setInputText('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      let reply = "";
-      const lower = text.toLowerCase();
+    try {
+      const res = await fetch('/api/ai-analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: text.trim(),
+          context: contextText || ''
+        })
+      });
 
-      if (lower.includes('hindi') || lower.includes('हिंदी')) {
-        reply = `**हिंदी में व्याख्या (Hindi Explanation):**\n\n1. **मुख्य नियम:** कोई भी असली कंपनी इंटरव्यू से पहले लैपटॉप, ट्रेनिंग या आईडी कार्ड के लिए पैसे नहीं मांगती।\n2. **यूपीआई नियम:** किसी भी स्थिति में पैसे प्राप्त करने के लिए अपना यूपीआई पिन न डालें।\n3. **अगला कदम:** यदि आपने पैसे भेज दिए हैं, तो तुरंत 1930 पर कॉल करें या cybercrime.gov.in पर शिकायत दर्ज कराएं।`;
-      } else if (lower.includes('complaint') || lower.includes('1930')) {
-        reply = `**Formal Cybercrime Complaint Draft (cybercrime.gov.in / 1930):**\n\nTo,\nThe Cyber Crime Cell / Duty Officer,\nSubject: Fraudulent solicitation & financial scam attempt\n\nI am writing to report a scam attempt received via digital messaging. The sender claimed to represent an organization and demanded advance payments under the pretext of registration/caution deposit. \n\nEvidence Summary:\n- Sender Details: [Provided in transaction]\n- Modus Operandi: Employment/Task fraud with upfront fee demand\n- Digital logs and payment handles have been captured.\n\nKindly initiate necessary cyber tracking and account freeze procedures.\n\nRespectfully,\nComplainant`;
-      } else if (lower.includes('reply') || lower.includes('safe')) {
-        reply = `**Safe Professional Reply to Sender:**\n\n"Dear HR / Team,\n\nThank you for reaching out. In accordance with standard verification policy, please send this offer letter from your official company domain email address (e.g. @companyname.com) along with your registered office CIN number.\n\nPlease note that as per Ministry of Labour norms, I do not make upfront cash or UPI deposits for onboarding or equipment. Looking forward to your official domain email."`;
-      } else if (lower.includes('simple')) {
-        reply = `**Simple Plain English Explanation:**\n\n• If someone offers you a job or money without an interview, it's almost always a trick.\n• If they ask for even ₹500 to send a laptop or uniform, do not pay. Genuine companies pay you; you never pay them.\n• Never install files that end with '.apk' on your phone.`;
-      } else {
-        reply = `**Heuristic Assessment Synthesis:**\n\nBased on your submission, the primary danger points are upfront money requests and untrusted communication channels. Genuine organizations operating in India use registered corporate domain emails and never request UPI deposits for recruitment or equipment. We recommend requesting an official physical address and verifying company registration on the Ministry of Corporate Affairs (mca.gov.in) portal before sharing any personal documents.`;
-      }
-
-      setMessages(prev => [
-        ...prev,
-        {
-          sender: 'ai',
-          text: reply,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      if (res.ok) {
+        const data = await res.json();
+        if (data.text && !data.fallback) {
+          setMessages(prev => [
+            ...prev,
+            {
+              sender: 'ai',
+              text: data.text,
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }
+          ]);
+          setIsTyping(false);
+          return;
         }
-      ]);
-      setIsTyping(false);
-    }, 600);
+      }
+    } catch {
+      // Fallback silently to offline heuristics
+    }
+
+    // Heuristic fallbacks when offline or API not present
+    let reply = "";
+    const lower = text.toLowerCase();
+
+    if (lower.includes('hindi') || lower.includes('हिंदी')) {
+      reply = `**हिंदी में व्याख्या (Hindi Explanation):**\n\n1. **मुख्य नियम:** कोई भी असली कंपनी इंटरव्यू से पहले लैपटॉप, ट्रेनिंग या आईडी कार्ड के लिए पैसे नहीं मांगती।\n2. **यूपीआई नियम:** किसी भी स्थिति में पैसे प्राप्त करने के लिए अपना यूपीआई पिन न डालें।\n3. **अगला कदम:** यदि आपने पैसे भेज दिए हैं, तो तुरंत 1930 पर कॉल करें या cybercrime.gov.in पर शिकायत दर्ज कराएं।`;
+    } else if (lower.includes('complaint') || lower.includes('1930')) {
+      reply = `**Formal Cybercrime Complaint Draft (cybercrime.gov.in / 1930):**\n\nTo,\nThe Cyber Crime Cell / Duty Officer,\nSubject: Fraudulent solicitation & financial scam attempt\n\nI am writing to report a scam attempt received via digital messaging. The sender claimed to represent an organization and demanded advance payments under the pretext of registration/caution deposit.\n\nEvidence Summary:\n- Sender Details: [Provided in transaction]\n- Modus Operandi: Employment/Task fraud with upfront fee demand\n- Digital logs and payment handles have been captured.\n\nKindly initiate necessary cyber tracking and account freeze procedures.\n\nRespectfully,\nComplainant`;
+    } else if (lower.includes('reply') || lower.includes('safe')) {
+      reply = `**Safe Professional Reply to Sender:**\n\n"Dear HR / Team,\n\nThank you for reaching out. In accordance with standard verification policy, please send this offer letter from your official company domain email address (e.g. @companyname.com) along with your registered office CIN number.\n\nPlease note that as per Ministry of Labour norms, I do not make upfront cash or UPI deposits for onboarding or equipment. Looking forward to your official domain email."`;
+    } else if (lower.includes('simple')) {
+      reply = `**Simple Plain English Explanation:**\n\n• If someone offers you a job or money without an interview, it's almost always a trick.\n• If they ask for even ₹500 to send a laptop or uniform, do not pay. Genuine companies pay you; you never pay them.\n• Never install files that end with '.apk' on your phone.`;
+    } else {
+      reply = `**Heuristic Assessment Synthesis:**\n\nBased on your submission, the primary danger points are upfront money requests and untrusted communication channels. Genuine organizations operating in India use registered corporate domain emails and never request UPI deposits for recruitment or equipment. We recommend requesting an official physical address and verifying company registration on the Ministry of Corporate Affairs (mca.gov.in) portal before sharing any personal documents.`;
+    }
+
+    setMessages(prev => [
+      ...prev,
+      {
+        sender: 'ai',
+        text: reply,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
+    setIsTyping(false);
   };
 
   return (

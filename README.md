@@ -106,7 +106,35 @@ npm run build
 
 ---
 
-## 6. Official Indian Redressal Helplines
+## 6. Documented Python FastAPI & PostgreSQL Backend Specification (Section 25)
+
+For multi-region deployments with Python microservices, the backend architecture maps to the following FastAPI endpoints:
+
+```text
+POST /check-text                  # Evaluates pasted job/internship/offer text with Pydantic verification schema
+POST /scan-image                  # Volatile OCR extraction & screenshot forensic analysis
+POST /scan-certificate            # Layout anomaly, seal inspection, & DigiLocker checklist
+POST /check-link                  # SSRF-protected URL lookup, punycode check, & threat DB matching
+POST /check-agent                 # Emigration agent verification cross-referencing MEA eMigrate
+POST /skill-review                # AI Skill Coach rubric & occupational feedback
+GET  /reports                     # Searchable moderated community scam board
+POST /reports                     # Submit new citizen incident report (supports anonymous mode)
+GET  /reports/trends              # Category distribution & incident trend telemetry
+POST /reports/{report_id}/dispute # Inaccuracy dispute ticket submission to moderation queue
+GET  /history                     # Cloud-synced user check records (opt-in)
+DELETE /history/{check_id}        # User-initiated permanent record expungement
+GET  /health                      # API gateway health, telemetry, & active AI engine state
+```
+
+### SQLAlchemy / PostgreSQL Schema Models
+- **`users`**: `id (UUID)`, `email (VARCHAR)`, `hashed_password`, `role (user|trainer|moderator)`, `created_at`
+- **`check_history`**: `id`, `user_id`, `checker_type`, `risk_score (INT)`, `verdict`, `evidence_json`, `created_at`
+- **`community_reports`**: `id`, `category`, `entity_name`, `identifier`, `loss_amount`, `description`, `status (unverified|moderated)`, `upvotes`, `city`, `created_at`
+- **`worker_skills`**: `id`, `user_id`, `skill_name`, `level`, `status (unverified|video_submitted|trainer_verified)`, `verified_by`, `verified_at`
+
+---
+
+## 7. Official Indian Redressal Helplines
 
 - **National Cyber Crime Helpline**: Dial **1930**
 - **Online Crime Reporting**: https://cybercrime.gov.in

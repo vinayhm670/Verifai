@@ -99,6 +99,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             <span aria-hidden="true">·</span>
             <button onClick={() => onNavigate('legal')} className="hover:text-slate-300">Disclaimer</button>
             <span aria-hidden="true">·</span>
+            <button onClick={() => onNavigate('pitch-summary')} className="hover:text-teal-400 font-semibold">Pitch Summary</button>
+            <span aria-hidden="true">·</span>
             <button onClick={() => onNavigate('settings')} className="hover:text-slate-300">Settings</button>
           </div>
         </div>

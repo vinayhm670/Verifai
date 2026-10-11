@@ -22,6 +22,7 @@ import { HelpAndReport } from './components/features/HelpAndReport';
 import { UserDashboard } from './components/features/UserDashboard';
 import { SettingsPage } from './components/features/SettingsPage';
 import { LegalPages } from './components/features/LegalPages';
+import { PitchSummary } from './components/features/PitchSummary';
 import { AuthModal } from './components/features/AuthModal';
 import { AIAssistantModal } from './components/features/AIAssistantModal';
 import { 
@@ -201,6 +202,9 @@ function AppContent() {
         )}
         {currentTab === 'legal' && (
           <LegalPages />
+        )}
+        {currentTab === 'pitch-summary' && (
+          <PitchSummary onNavigate={handleNavigate} />
         )}
       </main>
 
