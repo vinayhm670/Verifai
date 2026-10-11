@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "Verifai — Trust & Scam Detection",
+  "short_name": "Verifai",
+  "description": "Verify before you trust. Check suspicious jobs, certificates, scholarships, agents, UPI IDs, and links across India.",
+  "theme_color": "#0F766E",
+  "background_color": "#F8FAFC",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/shield-icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

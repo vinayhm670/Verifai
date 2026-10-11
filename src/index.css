@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Source Sans 3', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-display: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    
+    --color-primary: #0F766E;
+    --color-primary-dark: #115E59;
+    --color-primary-light: #CCFBF1;
+    --color-accent: #0284C7;
+  }
+
+  body {
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
+  }
+}
+
+/* Custom theme overrides when accent is selected */
+body[data-accent="teal"] {
+  --color-primary: #0F766E;
+  --color-primary-dark: #115E59;
+}
+body[data-accent="blue"] {
+  --color-primary: #1D4ED8;
+  --color-primary-dark: #1E40AF;
+}
+body[data-accent="violet"] {
+  --color-primary: #7C3AED;
+  --color-primary-dark: #6D28D9;
+}
+body[data-accent="green"] {
+  --color-primary: #15803D;
+  --color-primary-dark: #166534;
+}
+body[data-accent="rose"] {
+  --color-primary: #BE123C;
+  --color-primary-dark: #9F1239;
+}
+
+/* High contrast & print optimizations */
+@media print {
+  header, nav, footer, .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}

@@ -1,0 +1,224 @@
+import React, { useState } from 'react';
+import { runHeuristicAnalysis } from '../../services/analyzer';
+import { saveToHistory } from '../../services/storage';
+import { SAMPLE_CASES } from '../../services/sampleData';
+import { UniversalVerdictCard } from '../common/UniversalVerdictCard';
+import { VoiceInputButton } from '../common/VoiceControls';
+import { AnalysisResult } from '../../types';
+import { Briefcase, AlertCircle, Sparkles, RotateCcw } from 'lucide-react';
+
+interface JobOfferCheckerProps {
+  onOpenAssistant: (context: string) => void;
+}
+
+export const JobOfferChecker: React.FC<JobOfferCheckerProps> = ({ onOpenAssistant }) => {
+  const [content, setContent] = useState('');
+  const [company, setCompany] = useState('');
+  const [contact, setContact] = useState('');
+  const [salary, setSalary] = useState('');
+  const [interviewConducted, setInterviewConducted] = useState<'yes' | 'no'>('no');
+  const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const handleAnalyze = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!content.trim()) return;
+
+    setIsAnalyzing(true);
+    setTimeout(() => {
+      const res = runHeuristicAnalysis({
+        checkerId: 'job',
+        content,
+        companyOrIssuer: company,
+        contactOrLink: contact,
+        statedAmountOrSalary: salary,
+        extraDetails: { interviewConducted }
+      });
+      setResult(res);
+      saveToHistory(res);
+      setIsAnalyzing(false);
+    }, 400);
+  };
+
+  const loadSample = (sampleIdx: number) => {
+    const s = SAMPLE_CASES.job[sampleIdx];
+    setContent(s.content);
+    setCompany(s.companyOrIssuer);
+    setContact(s.contactOrLink);
+    setSalary(s.statedAmountOrSalary);
+    setInterviewConducted(s.extraDetails?.interviewConducted === 'true' ? 'yes' : 'no');
+
+    const res = runHeuristicAnalysis({
+      checkerId: 'job',
+      content: s.content,
+      companyOrIssuer: s.companyOrIssuer,
+      contactOrLink: s.contactOrLink,
+      statedAmountOrSalary: s.statedAmountOrSalary,
+      extraDetails: s.extraDetails
+    });
+    res.isDemoSample = true;
+    setResult(res);
+    saveToHistory(res);
+  };
+
+  const handleReset = () => {
+    setContent('');
+    setCompany('');
+    setContact('');
+    setSalary('');
+    setResult(null);
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6">
+      <div className="mb-8">
+        <div className="flex items-center gap-2 text-teal-800 dark:text-teal-400 text-xs font-semibold uppercase tracking-wider mb-2">
+          <Briefcase className="w-4 h-4" />
+          <span>Recruitment Verification Engine</span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          Job Offer & Recruiter Scam Checker
+        </h1>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+          Check suspicious job letters, Telegram part-time offers, WhatsApp recruitment messages, and equipment deposit demands before you pay.
+        </p>
+
+        {/* 1-Click Demonstration Samples */}
+        <div className="mt-4 flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+          <span className="text-xs text-slate-500 font-medium">Try Sample Case:</span>
+          <button
+            onClick={() => loadSample(0)}
+            className="px-2.5 py-1 text-xs font-medium rounded-md bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-900 transition-colors"
+          >
+            Example 1: Fake Offer (Laptop Deposit Scam)
+          </button>
+          <button
+            onClick={() => loadSample(1)}
+            className="px-2.5 py-1 text-xs font-medium rounded-md bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900 transition-colors"
+          >
+            Example 2: Genuine MNC Technical Offer
+          </button>
+        </div>
+      </div>
+
+      {/* Main Input Form */}
+      <form onSubmit={handleAnalyze} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-4">
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-xs font-bold text-slate-900 dark:text-white">
+              Offer Message, Email Body, or Telegram Text <span className="text-rose-500">*</span>
+            </label>
+            <VoiceInputButton onTranscript={(txt) => setContent(prev => prev + ' ' + txt)} />
+          </div>
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            rows={5}
+            required
+            placeholder="Paste the job message, email text, WhatsApp forward, or offer terms here..."
+            className="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-3 text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-teal-700"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              Company or Recruiter Name (Optional)
+            </label>
+            <input
+              type="text"
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+              placeholder="e.g. Infosys, TCS, Global Tech Pvt Ltd"
+              className="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-2.5 text-slate-900 dark:text-slate-100"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              Sender Email, Phone, or Website (Optional)
+            </label>
+            <input
+              type="text"
+              value={contact}
+              onChange={(e) => setContact(e.target.value)}
+              placeholder="e.g. hr@company.com or +91 98xxx"
+              className="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-2.5 text-slate-900 dark:text-slate-100"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              Stated Salary or CTC (Optional)
+            </label>
+            <input
+              type="text"
+              value={salary}
+              onChange={(e) => setSalary(e.target.value)}
+              placeholder="e.g. ₹6,50,000 / year or ₹5,000 / day"
+              className="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-2.5 text-slate-900 dark:text-slate-100"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              Did you attend a formal video/in-person interview?
+            </label>
+            <select
+              value={interviewConducted}
+              onChange={(e) => setInterviewConducted(e.target.value as 'yes' | 'no')}
+              className="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-2.5 text-slate-900 dark:text-slate-100"
+            >
+              <option value="no">No interview (Direct offer or WhatsApp/Telegram only)</option>
+              <option value="yes">Yes, formal panel/video interview took place</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between pt-2">
+          <button
+            type="button"
+            onClick={handleReset}
+            className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Clear form</span>
+          </button>
+
+          <button
+            type="submit"
+            disabled={isAnalyzing || !content.trim()}
+            className="px-6 py-2.5 text-xs font-bold text-white bg-teal-800 hover:bg-teal-900 disabled:opacity-50 rounded-lg shadow-sm transition-colors flex items-center gap-2"
+          >
+            {isAnalyzing ? (
+              <span>Running Analysis...</span>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                <span>Verify Job Offer</span>
+              </>
+            )}
+          </button>
+        </div>
+      </form>
+
+      {/* Safety Notice */}
+      <div className="mt-4 p-3 rounded-lg bg-teal-50/50 dark:bg-teal-950/20 border border-teal-100 dark:border-teal-900 flex items-start gap-2 text-xs text-teal-900 dark:text-teal-200">
+        <AlertCircle className="w-4 h-4 text-teal-700 shrink-0 mt-0.5" />
+        <p>
+          Golden Rule: No legitimate employer in India charges candidates for onboarding, laptop courier insurance, uniform fees, or training. Any upfront money demand is an immediate indicator of fraud.
+        </p>
+      </div>
+
+      {/* Results View */}
+      {result && (
+        <UniversalVerdictCard
+          result={result}
+          onOpenAssistantWithContext={onOpenAssistant}
+        />
+      )}
+    </div>
+  );
+};
