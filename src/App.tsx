@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { MobileNav } from './components/layout/MobileNav';
@@ -24,24 +25,23 @@ import { LegalPages } from './components/features/LegalPages';
 import { AuthModal } from './components/features/AuthModal';
 import { AIAssistantModal } from './components/features/AIAssistantModal';
 import { 
-  getStoredTheme, 
-  setStoredTheme, 
-  getStoredAccent, 
-  setStoredAccent, 
   getStoredLanguage, 
   setStoredLanguage,
   getSession
 } from './services/storage';
 import { Language } from './i18n/translations';
 import { UserSession } from './types';
-import { Bot, Shield, WifiOff } from 'lucide-react';
+import { Bot, WifiOff } from 'lucide-react';
 
-export default function App() {
+function AppContent() {
+  const { resolvedMode, setThemeDirect } = useTheme();
+
   const [currentTab, setCurrentTab] = useState<string>('home');
   const [lang, setLang] = useState<Language>(getStoredLanguage());
-  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>(getStoredTheme());
-  const [accent, setAccent] = useState<string>(getStoredAccent());
   const [session, setSession] = useState<UserSession>(getSession());
+
+  // Global analysis pulse state for Green Nerve Background
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Modals & Drawers
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -49,21 +49,6 @@ export default function App() {
   const [assistantContext, setAssistantContext] = useState<string>('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
-
-  // Apply Theme and Accent attributes
-  useEffect(() => {
-    const root = document.documentElement;
-    const body = document.body;
-
-    const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    if (isDark) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-
-    body.setAttribute('data-accent', accent);
-  }, [theme, accent]);
 
   // Online / Offline tracking
   useEffect(() => {
@@ -86,19 +71,7 @@ export default function App() {
   };
 
   const handleToggleTheme = () => {
-    const nextTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(nextTheme);
-    setStoredTheme(nextTheme);
-  };
-
-  const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
-    setTheme(newTheme);
-    setStoredTheme(newTheme);
-  };
-
-  const handleAccentChange = (newAccent: string) => {
-    setAccent(newAccent);
-    setStoredAccent(newAccent);
+    setThemeDirect(resolvedMode === 'dark' ? 'light' : 'dark');
   };
 
   const handleLangChange = (newLang: Language) => {
@@ -125,15 +98,15 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors relative selection:bg-teal-600 selection:text-white">
-      {/* Interactive 3D Background */}
-      <ShieldBackground />
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#07130F] text-slate-900 dark:text-slate-100 transition-colors relative selection:bg-emerald-600 selection:text-white">
+      {/* Real-time Movable Green Nerve-System 3D Background */}
+      <ShieldBackground isAnalyzing={isAnalyzing} />
 
-      {/* Offline Toast */}
+      {/* Offline Connectivity Toast */}
       {!isOnline && (
         <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500 text-white text-xs font-semibold shadow-lg">
           <WifiOff className="w-4 h-4 animate-pulse" />
-          <span>Offline Mode — Cached Verifai algorithms are active</span>
+          <span>Offline Mode — Cached Verifai heuristic engine is active</span>
         </div>
       )}
 
@@ -143,7 +116,7 @@ export default function App() {
         onNavigate={handleNavigate}
         lang={lang}
         onToggleLang={handleToggleLang}
-        theme={theme}
+        theme={resolvedMode}
         onToggleTheme={handleToggleTheme}
         session={session}
         onOpenAuth={() => setAuthModalOpen(true)}
@@ -157,7 +130,7 @@ export default function App() {
           <HomePage onNavigate={handleNavigate} lang={lang} />
         )}
 
-        {/* Checkers */}
+        {/* 8 Primary Checkers */}
         {currentTab === 'checker-job' && (
           <JobOfferChecker onOpenAssistant={handleOpenAssistant} />
         )}
@@ -198,7 +171,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Platform Features */}
+        {/* Connected Pages */}
         {currentTab === 'skill-passport' && (
           <SkillPassport />
         )}
@@ -222,10 +195,6 @@ export default function App() {
         )}
         {currentTab === 'settings' && (
           <SettingsPage
-            currentTheme={theme}
-            onThemeChange={handleThemeChange}
-            currentAccent={accent}
-            onAccentChange={handleAccentChange}
             currentLang={lang}
             onLangChange={handleLangChange}
           />
@@ -235,10 +204,10 @@ export default function App() {
         )}
       </main>
 
-      {/* Floating AI Assistant Trigger (Bottom right, accessible, non-obtrusive) */}
+      {/* Floating Contextual AI Assistant Trigger */}
       <button
         onClick={() => handleOpenAssistant()}
-        className="fixed bottom-20 lg:bottom-6 right-6 z-40 p-3.5 rounded-full bg-teal-800 text-white shadow-xl hover:bg-teal-900 hover:scale-105 transition-all flex items-center justify-center group"
+        className="fixed bottom-20 lg:bottom-6 right-6 z-40 p-3.5 rounded-full bg-teal-800 hover:bg-teal-900 text-white shadow-xl hover:scale-105 transition-all flex items-center justify-center group"
         title="Open Verifai AI Assistant"
       >
         <Bot className="w-5 h-5 text-white" />
@@ -273,5 +242,13 @@ export default function App() {
       {/* Quiet Footer */}
       <Footer onNavigate={handleNavigate} />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }

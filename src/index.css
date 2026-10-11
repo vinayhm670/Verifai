@@ -6,14 +6,52 @@
     --font-display: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
     
-    --color-primary: #0F766E;
-    --color-primary-dark: #115E59;
-    --color-primary-light: #CCFBF1;
-    --color-accent: #0284C7;
+    /* Default Light Mode tokens */
+    --background: #F8FAFC;
+    --foreground: #172033;
+    --surface: #FFFFFF;
+    --surface-muted: #F1F5F9;
+    --border: #E2E8F0;
+    --muted: #64748B;
+    --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+
+    /* Signature Green Nerve System & Neural Palette */
+    --neural-green: #22C55E;
+    --neural-green-glow: #86EFAC;
+    --neural-mint: #A7F3D0;
+    --neural-cyan: #67E8F9;
+    --neural-dark: #07130F;
+
+    /* Semantic Default (Teal) */
+    --primary: #0F766E;
+    --primary-hover: #115E59;
+    --primary-light: #CCFBF1;
+    --primary-foreground: #FFFFFF;
+    --focus-ring: #0F766E;
+  }
+
+  /* Dark Mode tokens based on #07130F background & #101F19 cards */
+  :root[data-theme="dark"], .dark {
+    --background: #07130F;
+    --foreground: #F1F5F9;
+    --surface: #101F19;
+    --surface-muted: #162B23;
+    --border: #1C382E;
+    --muted: #94A3B8;
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+
+    --primary: #22C55E;
+    --primary-hover: #16A34A;
+    --primary-light: #052E16;
+    --primary-foreground: #07130F;
+    --focus-ring: #22C55E;
   }
 
   body {
     font-family: var(--font-sans);
+    background-color: var(--background);
+    color: var(--foreground);
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   h1, h2, h3, h4, h5, h6, .font-display {
@@ -22,26 +60,91 @@
   }
 }
 
-/* Custom theme overrides when accent is selected */
-body[data-accent="teal"] {
-  --color-primary: #0F766E;
-  --color-primary-dark: #115E59;
+/* Accent Presets */
+:root[data-accent="teal"] {
+  --primary: #0F766E;
+  --primary-hover: #115E59;
+  --primary-light: #CCFBF1;
+  --primary-foreground: #FFFFFF;
+  --focus-ring: #0F766E;
 }
-body[data-accent="blue"] {
-  --color-primary: #1D4ED8;
-  --color-primary-dark: #1E40AF;
+:root[data-accent="teal"][data-theme="dark"], .dark[data-accent="teal"] {
+  --primary: #14B8A6;
+  --primary-hover: #0D9488;
+  --primary-light: #042F2E;
+  --primary-foreground: #FFFFFF;
+  --focus-ring: #14B8A6;
 }
-body[data-accent="violet"] {
-  --color-primary: #7C3AED;
-  --color-primary-dark: #6D28D9;
+
+:root[data-accent="blue"] {
+  --primary: #1D4ED8;
+  --primary-hover: #1E40AF;
+  --primary-light: #DBEAFE;
+  --primary-foreground: #FFFFFF;
+  --focus-ring: #1D4ED8;
 }
-body[data-accent="green"] {
-  --color-primary: #15803D;
-  --color-primary-dark: #166534;
+:root[data-accent="blue"][data-theme="dark"], .dark[data-accent="blue"] {
+  --primary: #3B82F6;
+  --primary-hover: #2563EB;
+  --primary-light: #172554;
+  --primary-foreground: #FFFFFF;
+  --focus-ring: #3B82F6;
 }
-body[data-accent="rose"] {
-  --color-primary: #BE123C;
-  --color-primary-dark: #9F1239;
+
+:root[data-accent="violet"] {
+  --primary: #7C3AED;
+  --primary-hover: #6D28D9;
+  --primary-light: #EDE9FE;
+  --primary-foreground: #FFFFFF;
+  --focus-ring: #7C3AED;
+}
+:root[data-accent="violet"][data-theme="dark"], .dark[data-accent="violet"] {
+  --primary: #8B5CF6;
+  --primary-hover: #7C3AED;
+  --primary-light: #2E1065;
+  --primary-foreground: #FFFFFF;
+  --focus-ring: #8B5CF6;
+}
+
+:root[data-accent="green"] {
+  --primary: #15803D;
+  --primary-hover: #166534;
+  --primary-light: #DCFCE7;
+  --primary-foreground: #FFFFFF;
+  --focus-ring: #15803D;
+}
+:root[data-accent="green"][data-theme="dark"], .dark[data-accent="green"] {
+  --primary: #22C55E;
+  --primary-hover: #16A34A;
+  --primary-light: #052E16;
+  --primary-foreground: #07130F;
+  --focus-ring: #22C55E;
+}
+
+:root[data-accent="rose"] {
+  --primary: #BE123C;
+  --primary-hover: #9F1239;
+  --primary-light: #FFE4E6;
+  --primary-foreground: #FFFFFF;
+  --focus-ring: #BE123C;
+}
+:root[data-accent="rose"][data-theme="dark"], .dark[data-accent="rose"] {
+  --primary: #F43F5E;
+  --primary-hover: #E11D48;
+  --primary-light: #4C0519;
+  --primary-foreground: #FFFFFF;
+  --focus-ring: #F43F5E;
+}
+
+/* Semantic verdict colors must always remain strictly consistent */
+.verdict-low-risk {
+  color: #15803D;
+}
+.verdict-caution {
+  color: #D97706;
+}
+.verdict-high-risk {
+  color: #DC2626;
 }
 
 /* High contrast & print optimizations */
