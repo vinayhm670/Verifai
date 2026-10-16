@@ -4,42 +4,26 @@ const path = require('path');
 const rootDir = __dirname;
 const publicDir = path.join(rootDir, 'public');
 
-const envUrl = process.env.SUPABASE_URL || '';
-const envKey = process.env.SUPABASE_ANON_KEY || '';
+const defaultUrl = 'https://qbhjczmgmhtdgqcuprwa.supabase.co';
+const defaultKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFiaGpjem1nbWh0ZGdxY3VwcndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxNzM3OTAsImV4cCI6MjEwNzc0OTc5MH0.RsM43i6BQPugwZqi_nhKwOktds6Iqy__Gi0Yprj04gQ';
 
-// 1. Generate config content
-let configContent = '';
-if (envUrl && envKey) {
-  configContent = `/**
+const envUrl = process.env.SUPABASE_URL || defaultUrl;
+const envKey = process.env.SUPABASE_ANON_KEY || defaultKey;
+
+const configContent = `/**
  * VERIFAI — Production Supabase Configuration
- * Injected automatically during Vercel build
+ * Injected automatically during build
  */
 window.VERIFAI_CONFIG = {
   SUPABASE_URL: ${JSON.stringify(envUrl)},
   SUPABASE_ANON_KEY: ${JSON.stringify(envKey)}
 };
 `;
-  console.log('[VERIFAI Build] Injected Supabase credentials from environment.');
-} else if (fs.existsSync(path.join(rootDir, 'config.js'))) {
-  configContent = fs.readFileSync(path.join(rootDir, 'config.js'), 'utf8');
-  console.log('[VERIFAI Build] Used existing local config.js.');
-} else {
-  configContent = `/**
- * VERIFAI — Default Fallback Configuration
- */
-window.VERIFAI_CONFIG = {
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: ""
-};
-`;
-  console.log('[VERIFAI Build] Generated fallback config.js.');
-}
 
-// 2. Write to root config.js
+// 1. Write to root config.js
 fs.writeFileSync(path.join(rootDir, 'config.js'), configContent, 'utf8');
 
-// 3. Ensure 'public' directory exists and copy static files to it
-// This guarantees Vercel succeeds whether outputDirectory is set to "." or "public"
+// 2. Ensure 'public' directory exists and copy static files to it
 if (!fs.existsSync(publicDir)) {
   fs.mkdirSync(publicDir, { recursive: true });
 }
@@ -63,4 +47,4 @@ for (const file of filesToCopy) {
   }
 }
 
-console.log('[VERIFAI Build] Output prepared for both root and public directory.');
+console.log('[VERIFAI Build] Output prepared with active Supabase configuration.');

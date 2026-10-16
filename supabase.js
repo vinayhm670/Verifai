@@ -15,8 +15,8 @@
   function initSupabase() {
     try {
       const cfg = window.VERIFAI_CONFIG || {};
-      const url = cfg.SUPABASE_URL || '';
-      const key = cfg.SUPABASE_ANON_KEY || '';
+      const url = cfg.SUPABASE_URL || 'https://qbhjczmgmhtdgqcuprwa.supabase.co';
+      const key = cfg.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFiaGpjem1nbWh0ZGdxY3VwcndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxNzM3OTAsImV4cCI6MjEwNzc0OTc5MH0.RsM43i6BQPugwZqi_nhKwOktds6Iqy__Gi0Yprj04gQ';
 
       if (url && key && !url.includes('your-project-ref') && !key.includes('your-anon-public-key') && window.supabase) {
         client = window.supabase.createClient(url, key, {
@@ -91,7 +91,9 @@
   window.VerifaiSupabase = {
     isConfigured: function () {
       const cfg = window.VERIFAI_CONFIG || {};
-      return Boolean(cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY && !cfg.SUPABASE_URL.includes('your-project-ref'));
+      const url = cfg.SUPABASE_URL || 'https://qbhjczmgmhtdgqcuprwa.supabase.co';
+      const key = cfg.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFiaGpjem1nbWh0ZGdxY3VwcndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxNzM3OTAsImV4cCI6MjEwNzc0OTc5MH0.RsM43i6BQPugwZqi_nhKwOktds6Iqy__Gi0Yprj04gQ';
+      return Boolean(url && key && !url.includes('your-project-ref'));
     },
 
     getClient: function () {
