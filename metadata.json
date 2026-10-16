@@ -1,8 +1,0 @@
-{
-  "name": "Verifai — AI-Powered Trust & Scam Detection Platform",
-  "description": "Verify before you trust. Check suspicious jobs, certificates, scholarships, agents, UPI IDs, and links across India.",
-  "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
-}

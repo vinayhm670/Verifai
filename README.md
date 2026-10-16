@@ -1,142 +1,120 @@
-# VERIFAI — AI-POWERED TRUST & SCAM DETECTION PLATFORM
+# VERIFAI — Universal Digital Credential & Job Offer Verification Platform
 
-**Tagline: Verify Before You Trust.**
-
-Verifai is a modern, responsive, functional full-stack platform engineered to help students, fresh graduates, parents, jobseekers, skilled workers, and citizens across India identify and prevent cyber scams involving:
-- Fake job offers and laptop deposit demands
-- ₹2,499 registration fee internship scams
-- Unaccredited certificate credentials and spoofed seals
-- Deceptive 100% selection coaching claims (CCPA compliance)
-- Unregistered overseas agents and illegal tourist-visa deployments (MEA eMigrate compliance)
-- Telegram paper leaks and spoofed university portals
-- Reverse UPI PIN scams and malicious electricity-bill APK downloads
-- Screenshot & document photo OCR scans
-- Skilled technician & worker Skill Passports with trainer verification
-- Crowdsourced community scam reporting & corroborated intelligence
-- Emergency redressal via National Cyber Crime Helpline 1930 & cybercrime.gov.in
+> **Verify Before You Trust.**  
+> *Every Credential. Every Opportunity. Verified with VERIFAI.*
 
 ---
 
-## 1. Architecture Overview
+## 1. Project Overview
 
-### Frontend
-- **Framework**: React 19, TypeScript, Vite
-- **Styling**: Tailwind CSS with custom Indian digital safety palette (Primary Teal `#0F766E`, Dark Teal `#115E59`, Slate `#F8FAFC`, Caution Amber `#D97706`, High-Risk Red `#DC2626`)
-- **Interactive 3D**: Three.js WebGL scene featuring a floating translucent verification shield and neural particle network, mouse/touch parallax, reduced-motion support, and CSS fallback
-- **Icons**: Lucide React
-- **Audio & Voice**: Web Speech API for Hindi/English speech synthesis narration and voice input dictation
-- **PWA**: Installable Web App Manifest (`/manifest.json`), service worker registration, and in-app iOS/Android install prompt
-- **Persistence**: Local storage for history, custom settings, worker skill credentials, and community reports
+**VERIFAI** is a client-side digital identity and employment offer verification platform engineered to protect students, job seekers, recruiters, and educational institutions from fake certificates, forged internship letters, fraudulent job offers, and company impersonation scams.
 
-### Backend & API
-- **Server**: Express Node.js / TypeScript (`server.ts`)
-- **SSRF Protection**: Strict filtering on `/api/url-lookup` blocking loopback, RFC 1918 private ranges, and cloud metadata IPs
-- **AI Synthesis**: Transparent heuristics combined with optional server-side `@google/genai` model integration
-- **Fail-Safe Design**: When external AI keys or network connections are absent, Verifai executes transparent rule-based heuristics so the public website remains 100% accessible and operational without crashes or dead clicks.
+The platform provides an end-to-end trust workflow:
+1. **Universal Verification Portal**: Instant lookup by Credential ID (`VF-...`) with cryptographic SHA-256 verification and status checks.
+2. **Live Camera & Image QR Scanner**: Fast WebRTC camera scanning with custom cybersecurity reticle and image file decoding powered by `jsQR`.
+3. **Document Forensics & File Inspection**: Upload PDF or image credentials for client-side heuristic inspection of embedded IDs, QR payloads, public webmail red flags, and payment scam phrasing.
+4. **Demonstration Issuer Portal**: Register certificates, internship letters, and job offers with deterministic canonical SHA-256 digests and high-resolution QR codes.
+5. **Registry Management Dashboard**: Searchable and filterable registry table, status revocation/reinstatement, audit logging, and JSON import/export.
+6. **Printable Official Documents**: Formal security certificate and corporate business letter templates with vector QR codes, security borders, watermarks, and native A4 print styling (`@media print`).
+7. **Fraud Prevention Education Center**: Deep-dives into email spoofing, deposit extortion, forged QR codes, and phantom hiring.
+8. **Interactive Offer Letter Risk Calculator**: 10-point weighted heuristic fraud calculator with real-time scoring and safety recommendations.
+9. **VERIFAI AI Assistant & Voice Command Engine**: Deterministic natural language processor supporting text prompts, Web Speech API speech-to-text, text-to-speech, and direct voice commands.
+10. **Interactive Live Animated Canvas Background**: Drifting aurora orbs, stardust bokeh, elastic cursor repulsion, mouse sparkle trail, click ripple waves, and constellation threads.
+11. **Multilingual Architecture**: Instant UI translation across English (EN), Hindi (HI), Spanish (ES), and French (FR).
 
 ---
 
-## 2. Environment Variables
+## 2. Technology Stack
 
-See `.env.example` for details:
+- **Markup & Layout**: HTML5 Semantic Architecture.
+- **Styling**: Tailwind CSS via CDN + custom design system in `style.css` (cyber glassmorphism, reticle laser animations, neon glows, and `@media print` rules).
+- **Logic**: Vanilla JavaScript (ES6+ modular classes).
+- **Icons**: Lucide Icons CDN.
+- **QR Code Decoding**: `jsQR` (v1.4.0).
+- **QR Code Generation**: `QRCode.js`.
+- **Forensics / PDF Text Extraction**: `PDF.js` (v3.11.174).
+- **Cryptographic Hashing**: Web Crypto API (`crypto.subtle.digest("SHA-256")`).
+- **Camera Scanning**: WebRTC `navigator.mediaDevices.getUserMedia()`.
+- **Speech & Voice**: Web Speech API (`SpeechRecognition` / `speechSynthesis`).
+- **Persistence**: Browser `localStorage` with versioned schemas.
 
-```env
-# Server-side AI model integration (Optional; heuristics run offline if unset)
-GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
+---
 
-# Base Application URL
-APP_URL="http://localhost:3000"
+## 3. Project File Structure
 
-# Optional Relational Database (Cloud SQL / PostgreSQL)
-DATABASE_URL="postgresql://user:password@localhost:5432/verifai"
-
-# Optional Client-side Supabase credentials
-VITE_SUPABASE_URL="https://your-project.supabase.co"
-VITE_SUPABASE_ANON_KEY="your-anon-key"
+```
+VERIFAI/
+├── index.html       # Application layout, navigation, modals, and templates
+├── style.css        # Design tokens, themes, animations, reticle, and print engine
+├── script.js        # Main controller, state management, SHA-256 engine, canvas background
+├── scanner.js       # Live camera QR scanner and image QR decoding engine
+├── trust-ai.js      # VERIFAI AI Assistant and Web Speech API voice engine
+├── i18n.js          # Translation dictionaries (English, Hindi, Spanish, French)
+└── README.md        # Comprehensive documentation and setup guide
 ```
 
 ---
 
-## 3. Verification Heuristic Index & Scoring
+## 4. How to Run Locally
 
-The **Heuristic Risk Index** calculates an evidentiary risk score from 0 to 100:
-- **0–29 (Likely Genuine)**: No overt fraud flags identified. Standard verification advice provided.
-- **30–69 (Be Careful)**: Cautionary flags detected (e.g. unverified recruitment agents, free email domains, unaccredited course seals).
-- **70–100 (Likely Fake / High Risk)**: Critical danger signs detected (advance money demands, laptop caution deposits, reverse UPI PIN requests, direct APK installs, tourist visa deployments).
-- **Insufficient Data**: When input volume is below 15 characters, Verifai flags "Not enough information to assess" rather than inventing a fabricated risk score.
+Because modern web browsers restrict **Camera (`getUserMedia`)** and **Microphone (`SpeechRecognition`)** access to **secure contexts** (`https://` or `http://localhost`), running the application via a local web server is strongly recommended.
 
-Every assessment includes:
-1. Semicircular risk gauge and plain-language verdict
-2. Observed evidence and highlighted suspicious phrases
-3. Missing verification data and recommended safe next steps
-4. Direct links to official Indian regulatory portals (eMigrate, DigiLocker, UGC, NTA, RBI Sachet, NPCI)
-5. Pre-drafted safe response to the recruiter/sender
-6. Pre-drafted formal 1930 Cybercrime complaint text
-7. Speech narration in Hindi and English
-
----
-
-## 4. Local Development & Build
-
+### Option A: Node.js (npx serve)
 ```bash
-# Install dependencies
-npm install
-
-# Run development server (Vite on port 3000)
-npm run dev
-
-# Run TypeScript checks
-npm run lint
-
-# Compile production bundle
-npm run build
+npx -y serve .
 ```
+Then navigate to: `http://localhost:3000`
 
----
-
-## 5. Deployment Instructions
-
-1. **One-Click AI Studio / Cloud Run Hosting**:
-   - The app compiles cleanly using `npm run build` producing optimized assets in `dist/`.
-   - Ensure the server runs on port `3000`.
-   - `GEMINI_API_KEY` is automatically managed in runtime secrets.
-
-2. **Decoupled Authentication**:
-   - End-user authentication is completely decoupled from website deployment credentials. Any valid email address can register or log in, and all public checkers remain 100% functional in guest mode without login.
-
----
-
-## 6. Documented Python FastAPI & PostgreSQL Backend Specification (Section 25)
-
-For multi-region deployments with Python microservices, the backend architecture maps to the following FastAPI endpoints:
-
-```text
-POST /check-text                  # Evaluates pasted job/internship/offer text with Pydantic verification schema
-POST /scan-image                  # Volatile OCR extraction & screenshot forensic analysis
-POST /scan-certificate            # Layout anomaly, seal inspection, & DigiLocker checklist
-POST /check-link                  # SSRF-protected URL lookup, punycode check, & threat DB matching
-POST /check-agent                 # Emigration agent verification cross-referencing MEA eMigrate
-POST /skill-review                # AI Skill Coach rubric & occupational feedback
-GET  /reports                     # Searchable moderated community scam board
-POST /reports                     # Submit new citizen incident report (supports anonymous mode)
-GET  /reports/trends              # Category distribution & incident trend telemetry
-POST /reports/{report_id}/dispute # Inaccuracy dispute ticket submission to moderation queue
-GET  /history                     # Cloud-synced user check records (opt-in)
-DELETE /history/{check_id}        # User-initiated permanent record expungement
-GET  /health                      # API gateway health, telemetry, & active AI engine state
+### Option B: Python 3
+```bash
+python -m http.server 8000
 ```
+Then navigate to: `http://localhost:8000`
 
-### SQLAlchemy / PostgreSQL Schema Models
-- **`users`**: `id (UUID)`, `email (VARCHAR)`, `hashed_password`, `role (user|trainer|moderator)`, `created_at`
-- **`check_history`**: `id`, `user_id`, `checker_type`, `risk_score (INT)`, `verdict`, `evidence_json`, `created_at`
-- **`community_reports`**: `id`, `category`, `entity_name`, `identifier`, `loss_amount`, `description`, `status (unverified|moderated)`, `upvotes`, `city`, `created_at`
-- **`worker_skills`**: `id`, `user_id`, `skill_name`, `level`, `status (unverified|video_submitted|trainer_verified)`, `verified_by`, `verified_at`
+### Option C: Direct File Opening
+You can double-click `index.html` to open it directly in Google Chrome, Microsoft Edge, Firefox, or Safari. All features (verification, registry, document generation, forensics, risk calculator, and theme toggle) will function immediately. Camera and microphone access may require explicit browser flag permissions when run from `file://`.
 
 ---
 
-## 7. Official Indian Redressal Helplines
+## 5. Demonstration Data & Quick Testing
 
-- **National Cyber Crime Helpline**: Dial **1930**
-- **Online Crime Reporting**: https://cybercrime.gov.in
-- **National Consumer Helpline**: Dial **1915** or visit https://consumerhelpline.gov.in
-- **Overseas Emigration Support**: https://emigrate.gov.in
+VERIFAI comes pre-seeded with 4 distinct demonstration records:
+
+| Credential ID | Recipient | Issuer | Type | Status |
+|---|---|---|---|---|
+| `VF-CERT-2024-9102` | Rahul Sharma | Google Cloud & AI Academy | Certificate | **Verified Demo** |
+| `VF-INT-2024-4481` | Sneha Patel | TCS | Internship Letter | **Verified Demo** |
+| `VF-OFF-2024-8833` | Ananya Deshmukh | Microsoft India | Job Offer | **Verified Demo** |
+| `VF-FRAUD-2024-0004` | Vikram Malhotra | Google Cloud (Impersonated) | Flagged Offer | **Revoked / Fraud** |
+
+### Testing Steps:
+1. **Test Genuine Verification**: Click the "Rahul Sharma" sample card or enter `VF-CERT-2024-9102`. Observe the emerald badge, SHA-256 hash, and click **"View Printable Document"** to inspect the high-fidelity certificate.
+2. **Test Flagged Fraud**: Click the sample card for `VF-FRAUD-2024-0004`. Observe the crimson alert warning of Telegram recruiter payment extortion.
+3. **Test Unknown ID**: Enter any unlisted ID such as `VF-CERT-2025-0000` to inspect the friendly guidance explaining that missing records require contacting the issuer directly.
+4. **Test Document Forensics**: Drag and drop a PDF or certificate image to inspect embedded IDs, suspicious email domains, and scam phrases.
+5. **Test Issuer Registration**: Go to **Issuer Portal -> Create Credential**, fill out the form, submit, and see your new verifiable credential appear in the registry and printable preview.
+6. **Test Risk Calculator**: Check risk indicators in the **Risk Calculator** to see the animated heuristic score meter change in real time.
+7. **Test Voice Commands**: Click the floating AI Assistant at the bottom-right, click the microphone, and say:
+   - *"Verify VF-INT-2024-4481"*
+   - *"Switch to dark mode"* or *"Switch to light mode"*
+   - *"Switch to Hindi"* or *"Switch to Spanish"*
+
+---
+
+## 6. Security & Architectural Limitations
+
+> [!IMPORTANT]
+> **Client-Side Demonstration Notice:**  
+> VERIFAI is built as a pure client-side web application. LocalStorage can be cleared or altered by users, and SHA-256 browser digests verify canonical data consistency rather than authentic corporate legal signatures.
+
+In a production enterprise deployment, the following backend components would replace client-side simulation:
+- Public-key asymmetric digital signatures (e.g. Ed25519 / W3C Verifiable Credentials).
+- Multi-factor authenticated issuer portals.
+- Immutable server-side audit logs (append-only ledger).
+- Authenticated issuer domain DNS-TXT record verification.
+
+---
+
+## 7. License
+
+Built for digital trust, student protection, and cybersecurity fraud prevention.

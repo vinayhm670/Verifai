@@ -1,0 +1,423 @@
+/* ==========================================================================
+   VERIFAI — Universal Digital Credential & Job Offer Verification Platform
+   Design System, Glassmorphism, Reticle Scanner, Animations, & Print Engine
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap');
+
+:root {
+  --primary-emerald: #10b981;
+  --primary-emerald-dark: #059669;
+  --primary-emerald-light: #34d399;
+  --primary-cyan: #06b6d4;
+  --primary-blue: #3b82f6;
+
+  --bg-light: #f8fafc;
+  --surface-light: rgba(255, 255, 255, 0.85);
+  --border-light: rgba(226, 232, 240, 0.9);
+  --text-primary-light: #0f172a;
+  --text-muted-light: #64748b;
+
+  --bg-dark: #060a12;
+  --surface-dark: rgba(15, 23, 42, 0.8);
+  --border-dark: rgba(51, 65, 85, 0.6);
+  --text-primary-dark: #f8fafc;
+  --text-muted-dark: #94a3b8;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-cert: 'Cinzel', Georgia, serif;
+}
+
+/* Base resets & typography */
+html {
+  font-family: var(--font-sans);
+  scroll-behavior: smooth;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+}
+
+/* Theme classes */
+body.dark {
+  background-color: var(--bg-dark);
+  color: var(--text-primary-dark);
+  color-scheme: dark;
+}
+
+body.light {
+  background-color: var(--bg-light);
+  color: var(--text-primary-light);
+  color-scheme: light;
+}
+
+/* Background Canvas */
+#bg-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+body.dark ::-webkit-scrollbar-track {
+  background: #0b1120;
+}
+
+body.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+body.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+body.light ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+body.light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+body.light ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 0.25s ease;
+}
+
+body.dark .glass-panel {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+body.light .glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 8px 32px 0 rgba(148, 163, 184, 0.15);
+}
+
+.glass-nav {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+body.dark .glass-nav {
+  background: rgba(6, 10, 18, 0.85);
+  border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+body.light .glass-nav {
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+/* Emerald neon glow */
+.emerald-glow {
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.25);
+}
+
+.emerald-glow-sm {
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+}
+
+.emerald-glow-hover:hover {
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.35);
+  border-color: rgba(16, 185, 129, 0.6);
+}
+
+/* Reticle QR Scanner Styling */
+.scanner-viewport {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  height: 340px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #000;
+}
+
+.scanner-reticle-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 240px;
+  height: 240px;
+  pointer-events: none;
+}
+
+/* Cyber corner brackets */
+.scanner-corner {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-color: #10b981;
+  border-style: solid;
+}
+
+.scanner-corner-tl {
+  top: 0;
+  left: 0;
+  border-width: 4px 0 0 4px;
+  border-top-left-radius: 8px;
+}
+
+.scanner-corner-tr {
+  top: 0;
+  right: 0;
+  border-width: 4px 4px 0 0;
+  border-top-right-radius: 8px;
+}
+
+.scanner-corner-bl {
+  bottom: 0;
+  left: 0;
+  border-width: 0 0 4px 4px;
+  border-bottom-left-radius: 8px;
+}
+
+.scanner-corner-br {
+  bottom: 0;
+  right: 0;
+  border-width: 0 4px 4px 0;
+  border-bottom-right-radius: 8px;
+}
+
+/* Animated Scanner Laser */
+.scanner-laser {
+  position: absolute;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #10b981 50%, transparent);
+  box-shadow: 0 0 12px #10b981, 0 0 20px #34d399;
+  animation: laserScan 2.4s infinite ease-in-out;
+}
+
+@keyframes laserScan {
+  0% {
+    top: 5%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 92%;
+    opacity: 1;
+  }
+  100% {
+    top: 5%;
+    opacity: 0.8;
+  }
+}
+
+/* AI Pulse Animation */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4), 0 0 30px rgba(6, 182, 212, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.7), 0 0 50px rgba(6, 182, 212, 0.4);
+  }
+}
+
+.ai-pulse-button {
+  animation: pulseGlow 3s infinite ease-in-out;
+}
+
+/* Listening Audio Wave Animation */
+.mic-wave {
+  position: relative;
+}
+.mic-wave::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid #10b981;
+  animation: rippleRing 1.4s infinite cubic-bezier(0, 0.2, 0.8, 1);
+}
+
+@keyframes rippleRing {
+  0% {
+    transform: scale(0.9);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* Printable Document Templates */
+.printable-document {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Watermark text overlay */
+.doc-watermark-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-35deg);
+  font-size: 3.5rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: rgba(148, 163, 184, 0.08);
+  pointer-events: none;
+  white-space: nowrap;
+  user-select: none;
+  z-index: 1;
+  text-transform: uppercase;
+}
+
+/* Certificate Typography & Ornate Border */
+.certificate-border {
+  border: 4px double #0f766e;
+  outline: 1px solid #14b8a6;
+  outline-offset: -12px;
+}
+
+.font-cert-title {
+  font-family: var(--font-cert);
+}
+
+.font-serif-body {
+  font-family: var(--font-serif);
+}
+
+/* Badge styling */
+.badge-verified {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-revoked {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.badge-pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Smooth Tab Underline */
+.active-tab {
+  color: #10b981 !important;
+  border-bottom: 2px solid #10b981;
+}
+
+/* Drag & Drop Highlight */
+.drag-active {
+  border-color: #10b981 !important;
+  background-color: rgba(16, 185, 129, 0.08) !important;
+}
+
+/* ==========================================================================
+   PRINT ENGINE (@media print)
+   ========================================================================== */
+@media print {
+  /* Set A4 standard margins */
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+
+  /* Reset all bodies and backgrounds */
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    font-size: 12pt;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide entire web application UI during print */
+  #bg-canvas,
+  header,
+  nav,
+  footer,
+  #hero-section,
+  #verify-section,
+  #forensics-section,
+  #issuer-section,
+  #fraud-section,
+  #calculator-section,
+  #how-section,
+  #ai-assistant-container,
+  #toast-container,
+  .no-print,
+  .modal-backdrop,
+  .modal-close-btn,
+  .modal-actions-bar {
+    display: none !important;
+  }
+
+  /* Make modal container full screen print target */
+  #doc-preview-modal {
+    position: static !important;
+    display: block !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+
+  #doc-preview-modal-content {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  #printable-doc-root {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 24px !important;
+    box-shadow: none !important;
+    border: 1px solid #94a3b8 !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  .doc-watermark-overlay {
+    color: rgba(0, 0, 0, 0.05) !important;
+  }
+}
