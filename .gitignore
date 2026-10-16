@@ -8,6 +8,7 @@ config.js
 
 # Dependencies & IDE
 node_modules/
+public/
 .vscode/
 .DS_Store
 Thumbs.db
