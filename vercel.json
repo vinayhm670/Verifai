@@ -20,6 +20,15 @@
           "value": "camera=(self), microphone=(self)"
         }
       ]
+    },
+    {
+      "source": "/(config.js|supabase.js)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
     }
   ]
 }
