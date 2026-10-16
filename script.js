@@ -146,6 +146,7 @@ class VerifaiApp {
     this.initRiskCalculator();
     this.initModals();
     this.initLanguageSelector();
+    this.initSupabaseSync();
 
     // Re-render icons with Lucide
     if (typeof lucide !== "undefined" && lucide.createIcons) {
@@ -154,7 +155,7 @@ class VerifaiApp {
   }
 
   // --------------------------------------------------------------------------
-  // Database / LocalStorage Management
+  // Database / LocalStorage & Supabase Cloud Management
   // --------------------------------------------------------------------------
   initDatabase() {
     try {
@@ -177,6 +178,66 @@ class VerifaiApp {
     } catch (e) {
       this.auditLog = [];
     }
+  }
+
+  async initSupabaseSync() {
+    this.updateSupabaseStatusUI("connecting", "Supabase: Connecting...");
+    if (!window.VerifaiSupabase || !window.VerifaiSupabase.isConfigured()) {
+      this.updateSupabaseStatusUI("offline", "Supabase: Local Mode");
+      return;
+    }
+
+    try {
+      const conn = await window.VerifaiSupabase.checkConnection();
+      if (!conn.connected) {
+        console.warn("[VERIFAI] Supabase connection status:", conn.error);
+        this.updateSupabaseStatusUI("offline", "Supabase: Local Cache");
+        return;
+      }
+
+      this.updateSupabaseStatusUI("online", "Supabase: Connected");
+
+      // Fetch remote credentials
+      const remoteRecords = await window.VerifaiSupabase.fetchCredentials();
+      if (remoteRecords && remoteRecords.length > 0) {
+        remoteRecords.forEach((remoteRec) => {
+          const idx = this.registry.findIndex((r) => r.id === remoteRec.id);
+          if (idx >= 0) {
+            this.registry[idx] = remoteRec;
+          } else {
+            this.registry.push(remoteRec);
+          }
+        });
+        try {
+          localStorage.setItem("verifai_registry_v1", JSON.stringify(this.registry));
+        } catch (e) {}
+        this.renderRegistryTable();
+      } else if (remoteRecords && remoteRecords.length === 0) {
+        // Auto-seed default demonstration records to Supabase if empty
+        console.info("[VERIFAI] Populating initial demo records to Supabase cloud...");
+        for (const defaultRec of DEFAULT_REGISTRY) {
+          await window.VerifaiSupabase.saveCredential(defaultRec);
+        }
+      }
+    } catch (err) {
+      console.warn("[VERIFAI] Supabase sync error:", err);
+      this.updateSupabaseStatusUI("offline", "Supabase: Local Fallback");
+    }
+  }
+
+  updateSupabaseStatusUI(state, text) {
+    const badges = document.querySelectorAll(".supabase-status-indicator");
+    badges.forEach((badge) => {
+      badge.textContent = text;
+      badge.className = "supabase-status-indicator inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono border transition-colors";
+      if (state === "online") {
+        badge.classList.add("bg-emerald-500/10", "border-emerald-500/30", "text-emerald-400");
+      } else if (state === "connecting") {
+        badge.classList.add("bg-amber-500/10", "border-amber-500/30", "text-amber-400");
+      } else {
+        badge.classList.add("bg-slate-800", "border-slate-700", "text-slate-400");
+      }
+    });
   }
 
   saveRegistry() {
@@ -202,6 +263,12 @@ class VerifaiApp {
     try {
       localStorage.setItem("verifai_audit_v1", JSON.stringify(this.auditLog));
     } catch (e) {}
+
+    // Forward to Supabase audit trail in background
+    if (window.VerifaiSupabase && window.VerifaiSupabase.isConfigured()) {
+      window.VerifaiSupabase.logAudit(action, recordId, details);
+    }
+
     this.renderAuditLog();
   }
 
@@ -672,8 +739,25 @@ class VerifaiApp {
     // Smooth UX delay for hash recalculation
     await new Promise(res => setTimeout(res, 280));
 
-    // Lookup in registry
-    const record = this.registry.find(r => r.id.toUpperCase() === trimmedId);
+    // Lookup in local registry
+    let record = this.registry.find(r => r.id.toUpperCase() === trimmedId);
+
+    // If not in local cache, query Supabase cloud registry
+    if (!record && window.VerifaiSupabase && window.VerifaiSupabase.isConfigured()) {
+      try {
+        const remoteRec = await window.VerifaiSupabase.getCredentialById(trimmedId);
+        if (remoteRec) {
+          record = remoteRec;
+          this.registry.unshift(record);
+          try {
+            localStorage.setItem("verifai_registry_v1", JSON.stringify(this.registry));
+          } catch(e) {}
+          this.renderRegistryTable();
+        }
+      } catch (err) {
+        console.warn("[VERIFAI] Supabase remote query error:", err);
+      }
+    }
 
     if (loadingPanel) loadingPanel.classList.add("hidden");
 
@@ -947,6 +1031,17 @@ class VerifaiApp {
     this.saveRegistry();
     this.logAudit("CREATED", newId, `Registered new ${type} for ${recipientName} (${issuerName}).`);
 
+    // Sync to Supabase Cloud
+    if (window.VerifaiSupabase && window.VerifaiSupabase.isConfigured()) {
+      window.VerifaiSupabase.saveCredential(newRecord).then(res => {
+        if (res && res.success) {
+          console.info("[VERIFAI] Credential synchronized to Supabase:", newId);
+        } else if (res && !res.success) {
+          console.warn("[VERIFAI] Supabase sync notice:", res.error);
+        }
+      });
+    }
+
     this.showToast(`Credential ${newId} registered successfully!`, "success");
     form.reset();
 
@@ -1139,6 +1234,16 @@ class VerifaiApp {
       record.updatedAt = new Date().toISOString();
       this.saveRegistry();
       this.logAudit("REVOKED", record.id, `Revoked reason: ${reason.trim()}`);
+
+      // Sync revocation to Supabase
+      if (window.VerifaiSupabase && window.VerifaiSupabase.isConfigured()) {
+        window.VerifaiSupabase.updateCredential(record.id, {
+          status: "revoked",
+          revocationReason: reason.trim(),
+          revocationDate: record.revocationDate
+        });
+      }
+
       this.showToast(`Credential ${record.id} has been revoked.`, "warning");
 
       if (this.currentRecord && this.currentRecord.id === record.id) {
@@ -1155,6 +1260,16 @@ class VerifaiApp {
       record.updatedAt = new Date().toISOString();
       this.saveRegistry();
       this.logAudit("REINSTATED", record.id, "Reinstated back to verified status.");
+
+      // Sync reinstatement to Supabase
+      if (window.VerifaiSupabase && window.VerifaiSupabase.isConfigured()) {
+        window.VerifaiSupabase.updateCredential(record.id, {
+          status: "verified",
+          revocationReason: "",
+          revocationDate: ""
+        });
+      }
+
       this.showToast(`Credential ${record.id} reinstated.`, "success");
 
       if (this.currentRecord && this.currentRecord.id === record.id) {
@@ -1168,6 +1283,12 @@ class VerifaiApp {
       this.registry = this.registry.filter(r => r.id !== record.id);
       this.saveRegistry();
       this.logAudit("DELETED", record.id, `Permanently deleted record ${record.id}`);
+
+      // Delete from Supabase
+      if (window.VerifaiSupabase && window.VerifaiSupabase.isConfigured()) {
+        window.VerifaiSupabase.deleteCredential(record.id);
+      }
+
       this.showToast(`Credential ${record.id} deleted.`, "info");
       this.hideResultPanels();
     }

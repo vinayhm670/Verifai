@@ -434,9 +434,9 @@ class VerifaiAIAssistant {
   }
 
   /**
-   * Process credential query against local registry
+   * Process credential query against local registry and Supabase cloud
    */
-  processCredentialQuery(credId) {
+  async processCredentialQuery(credId) {
     // Also trigger UI verification on the main page
     if (window.VerifaiApp && typeof window.VerifaiApp.verifyCredentialById === "function") {
       window.VerifaiApp.verifyCredentialById(credId);
@@ -450,7 +450,16 @@ class VerifaiAIAssistant {
       registry = [];
     }
 
-    const record = registry.find((r) => r.id.toUpperCase() === credId.toUpperCase());
+    let record = registry.find((r) => r.id.toUpperCase() === credId.toUpperCase());
+
+    // Query Supabase cloud if not in localStorage
+    if (!record && window.VerifaiSupabase && window.VerifaiSupabase.isConfigured()) {
+      try {
+        record = await window.VerifaiSupabase.getCredentialById(credId);
+      } catch (err) {
+        console.warn("[VERIFAI AI] Supabase remote query error:", err);
+      }
+    }
 
     if (!record) {
       const msg =

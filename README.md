@@ -50,6 +50,14 @@ VERIFAI/
 ├── scanner.js       # Live camera QR scanner and image QR decoding engine
 ├── trust-ai.js      # VERIFAI AI Assistant and Web Speech API voice engine
 ├── i18n.js          # Translation dictionaries (English, Hindi, Spanish, French)
+├── config.js        # Local Supabase credentials (gitignored, never committed)
+├── config.example.js# Template for Supabase configuration with placeholders
+├── supabase.js      # Supabase client singleton, CRUD operations, and auth
+├── .env.local       # Local environment configuration (gitignored)
+├── .env.example     # Environment variable template with placeholders
+├── supabase/
+│   └── migrations/
+│       └── 001_initial_schema.sql # Database migration script with RLS
 └── README.md        # Comprehensive documentation and setup guide
 ```
 
@@ -101,7 +109,26 @@ VERIFAI comes pre-seeded with 4 distinct demonstration records:
 
 ---
 
-## 6. Security & Architectural Limitations
+## 6. Supabase Cloud Database Integration
+
+VERIFAI includes hybrid cloud persistence powered by **Supabase**:
+- **Automatic Fallback**: Functions seamlessly in offline or local mode via `localStorage` if Supabase is unavailable or offline.
+- **Row Level Security (RLS)**: Public read access for universal credential verification with authenticated writes for issuer operations.
+- **Audit Ledger**: Immutable append-only `audit_log` table for all credential lifecycle events.
+
+### Running the Database Migration
+1. Open your [Supabase Dashboard](https://supabase.com/dashboard) and navigate to **SQL Editor**.
+2. Click **New Query** and copy the contents of `supabase/migrations/001_initial_schema.sql`.
+3. Click **Run**.
+4. The migration creates:
+   - `credentials` table with composite indexes and automatic `updated_at` triggers.
+   - `audit_log` table for cryptographic and administrative history.
+   - Row Level Security (RLS) policies.
+   - Default seed demonstration credentials.
+
+---
+
+## 7. Security & Architectural Limitations
 
 > [!IMPORTANT]
 > **Client-Side Demonstration Notice:**  
@@ -115,6 +142,6 @@ In a production enterprise deployment, the following backend components would re
 
 ---
 
-## 7. License
+## 8. License
 
 Built for digital trust, student protection, and cybersecurity fraud prevention.
